@@ -39,9 +39,12 @@
 #define ODOMETRY_HELPER_ROS2_H_
 
 #include <nav_msgs/Odometry.h>
+#include "robin_bridge_generated/EncoderData.h"
+#include <std_msgs/Float64.h>
 #include <ros/ros.h>
 #include <boost/thread.hpp>
 #include <geometry_msgs/PoseStamped.h>
+
 
 namespace base_local_planner {
 
@@ -52,7 +55,7 @@ public:
    * @param odom_topic The topic on which to subscribe to Odometry
    *        messages.  If the empty string is given (the default), no
    *        subscription is done. */
-  OdometryHelperRos(std::string odom_topic = "");
+  OdometryHelperRos(std::string odom_topic = "", std::string steering_topic = "");
   ~OdometryHelperRos() {}
 
   /**
@@ -60,8 +63,12 @@ public:
    * @param msg An Odometry message
    */
   void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
-
   void getOdom(nav_msgs::Odometry& base_odom);
+
+  void SteerCallback(const robin_bridge_generated::EncoderData::ConstPtr& msg);
+  void getSteeringAngle(std_msgs::Float64& steer_ang);
+  
+  
 
   void getRobotVel(geometry_msgs::PoseStamped& robot_vel);
 
@@ -71,6 +78,7 @@ public:
    *
    * If odom_topic is the empty string, this just unsubscribes from the previous topic. */
   void setOdomTopic(std::string odom_topic);
+  void setSteeringTopic(std::string steering_topic);
 
   /** @brief Return the current odometry topic. */
   std::string getOdomTopic() const { return odom_topic_; }
@@ -78,11 +86,15 @@ public:
 private:
   //odom topic
   std::string odom_topic_;
-
+  std::string steering_topic_;
+  boost::mutex steering_mutex_;
   // we listen on odometry on the odom topic
+  std_msgs::Float64 steering_;
   ros::Subscriber odom_sub_;
+  ros::Subscriber steering_sub_;
   nav_msgs::Odometry base_odom_;
   boost::mutex odom_mutex_;
+  
   // global tf frame id
   std::string frame_id_; ///< The frame_id associated this data
 };

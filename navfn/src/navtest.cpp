@@ -4,6 +4,7 @@
 //
 
 #include <navfn/navfn.h>
+#include <navfn/navwin.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
@@ -13,8 +14,6 @@
 
 #include <string>
 #include <fstream>
-
-#include "navwin.h"
 
 using namespace navfn;
 

@@ -2,24 +2,6 @@
 Changelog for package costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.16.7 (2020-08-27)
--------------------
-* add explicit call to ros::Timer::stop in the destructor (`#984 <https://github.com/ros-planning/navigation/issues/984>`_)
-  Co-authored-by: Dima Dorezyuk <dorezyuk@magazino.eu>
-* backport noetic memory fixes (`#983 <https://github.com/ros-planning/navigation/issues/983>`_)
-  spent some time with valgrind to fix this test,
-  was failing intermittently in melodic, all the
-  time in noetic.
-* Contributors: Dima Dorezyuk, Michael Ferguson
-
-1.16.6 (2020-03-18)
--------------------
-
-1.16.5 (2020-03-15)
--------------------
-* [melodic] updated install for better portability. (`#973 <https://github.com/ros-planning/navigation/issues/973>`_)
-* Contributors: Sean Yen
-
 1.16.4 (2020-03-04)
 -------------------
 * fix published footprint topic name (`#947 <https://github.com/cobalt-robotics/navigation/issues/947>`_)

@@ -2,17 +2,6 @@
 Changelog for package rotate_recovery
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.16.7 (2020-08-27)
--------------------
-
-1.16.6 (2020-03-18)
--------------------
-
-1.16.5 (2020-03-15)
--------------------
-* [melodic] updated install for better portability. (`#973 <https://github.com/ros-planning/navigation/issues/973>`_)
-* Contributors: Sean Yen
-
 1.16.4 (2020-03-04)
 -------------------
 * [Windows][melodic] Navigation (except for map_server and amcl) Windows build bring up (`#851 <https://github.com/cobalt-robotics/navigation/issues/851>`_)

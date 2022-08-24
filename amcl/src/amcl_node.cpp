@@ -48,6 +48,7 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/PoseArray.h"
 #include "geometry_msgs/Pose.h"
+#include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "nav_msgs/GetMap.h"
 #include "nav_msgs/SetMap.h"
@@ -150,7 +151,9 @@ class AmclNode
     std::shared_ptr<tf2_ros::TransformBroadcaster> tfb_;
     std::shared_ptr<tf2_ros::TransformListener> tfl_;
     std::shared_ptr<tf2_ros::Buffer> tf_;
-
+    std::ofstream tmp_file;
+    std::string filename = "/home/agv-fl250/tmp_pose_file.txt";
+    std::string file_text;
     bool sent_first_transform_;
 
     tf2::Transform latest_tf_;
@@ -249,6 +252,7 @@ class AmclNode
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     ros::Publisher pose_pub_;
+    ros::Publisher pose2d_pub_;
     ros::Publisher particlecloud_pub_;
     ros::ServiceServer global_loc_srv_;
     ros::ServiceServer nomotion_update_srv_; //to let amcl update samples without requiring motion
@@ -293,9 +297,7 @@ class AmclNode
     void checkLaserReceived(const ros::TimerEvent& event);
 };
 
-#if NEW_UNIFORM_SAMPLING
 std::vector<std::pair<int,int> > AmclNode::free_space_indices;
-#endif
 
 #define USAGE "USAGE: amcl"
 
@@ -471,6 +473,7 @@ AmclNode::AmclNode() :
   tfl_.reset(new tf2_ros::TransformListener(*tf_));
 
   pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("amcl_pose", 2, true);
+  pose2d_pub_ = nh_.advertise<geometry_msgs::Pose2D>("amcl_pose_2d", 2, true);
   particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
   global_loc_srv_ = nh_.advertiseService("global_localization", 
 					 &AmclNode::globalLocalizationCallback,
@@ -782,6 +785,10 @@ void AmclNode::savePoseToServer()
                                   last_published_pose.pose.covariance[6*1+1]);
   private_nh_.setParam("initial_cov_aa", 
                                   last_published_pose.pose.covariance[6*5+5]);
+
+  tmp_file.open("/home/agv-fl250/tmp_pose_file.txt");
+  tmp_file << std::to_string(map_pose.getOrigin().x()) << "\n" << std::to_string(map_pose.getOrigin().y()) << "\n" << std::to_string(yaw);
+  tmp_file.close();
 }
 
 void AmclNode::updatePoseFromServer()
@@ -792,7 +799,14 @@ void AmclNode::updatePoseFromServer()
   init_cov_[0] = 0.5 * 0.5;
   init_cov_[1] = 0.5 * 0.5;
   init_cov_[2] = (M_PI/12.0) * (M_PI/12.0);
-  // Check for NAN on input from param server, #5239
+
+  int pose_idx = 0;
+  std::ifstream tmp_file_pose(filename.c_str());
+
+  if (!tmp_file_pose.is_open())
+  {
+    ROS_INFO("Cannot open the file %s, in this case take the initiale pose from parameters", filename.c_str());
+    // Check for NAN on input from param server, #5239
   double tmp_pos;
   private_nh_.param("initial_pose_x", tmp_pos, init_pose_[0]);
   if(!std::isnan(tmp_pos))
@@ -824,6 +838,15 @@ void AmclNode::updatePoseFromServer()
     init_cov_[2] = tmp_pos;
   else
     ROS_WARN("ignoring NAN in initial covariance AA");	
+  }
+  
+  while (getline (tmp_file_pose, file_text))
+  {
+    init_pose_[pose_idx] = std::stod(file_text);
+    pose_idx++;
+  }
+  
+  
 }
 
 void 
@@ -1389,12 +1412,17 @@ AmclNode::laserReceived(const sensor_msgs::LaserScanConstPtr& laser_scan)
        */
 
       geometry_msgs::PoseWithCovarianceStamped p;
+      geometry_msgs::Pose2D p_2d;
       // Fill in the header
       p.header.frame_id = global_frame_id_;
       p.header.stamp = laser_scan->header.stamp;
       // Copy in the pose
       p.pose.pose.position.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
       p.pose.pose.position.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
+      //pose2d
+      p_2d.x = hyps[max_weight_hyp].pf_pose_mean.v[0];
+      p_2d.y = hyps[max_weight_hyp].pf_pose_mean.v[1];
+      p_2d.theta = hyps[max_weight_hyp].pf_pose_mean.v[2];
 
       tf2::Quaternion q;
       q.setRPY(0, 0, hyps[max_weight_hyp].pf_pose_mean.v[2]);
@@ -1427,6 +1455,7 @@ AmclNode::laserReceived(const sensor_msgs::LaserScanConstPtr& laser_scan)
        */
 
       pose_pub_.publish(p);
+      pose2d_pub_.publish(p_2d);
       last_published_pose = p;
 
       ROS_DEBUG("New pose: %6.3f %6.3f %6.3f",

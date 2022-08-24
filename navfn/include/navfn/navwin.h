@@ -12,7 +12,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/fl_draw.H>
 
-#include <navfn/navfn.h>
+#include "navfn.h"
 
 namespace navfn {
   class NavWin 

@@ -11,7 +11,6 @@ find_package(catkin REQUIRED
             roscpp
             rospy
             tf2_geometry_msgs
-            tf2_ros
         )
 
 
