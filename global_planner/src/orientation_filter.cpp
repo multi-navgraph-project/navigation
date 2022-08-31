@@ -38,7 +38,9 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/convert.h>
 #include <angles/angles.h>
+#include <ros/console.h>
 
 namespace global_planner {
 
@@ -80,7 +82,7 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
             break;
         case INTERPOLATE:
             path[0].pose.orientation = start.pose.orientation;
-            interpolate(path, 0, n-1);
+            updateOrientation(path);
             break;
         case FORWARDTHENINTERPOLATE:
             for(int i=0;i<n-1;i++){
@@ -130,6 +132,35 @@ void OrientationFilter::interpolate(std::vector<geometry_msgs::PoseStamped>& pat
         set_angle(&path[i], angle);
     }
 }
-                                   
+void OrientationFilter::updateOrientation(std::vector<geometry_msgs::PoseStamped>& path)
+{
+    double dx, dy, theta, pt_yaw;
+    bool reversing_segment = false;
 
+  // Find if this path segment is in reverse
+  dx = path[1].pose.position.x - path[0].pose.position.x;
+  dy = path[1].pose.position.y - path[0].pose.position.y;
+  theta = atan2(dy, dx);
+  pt_yaw = tf2::getYaw(path[0].pose.orientation);
+  if (fabs(angles::shortest_angular_distance(pt_yaw, theta)) >= M_PI_2) {
+    reversing_segment = true;
+  }
+  // Find the angle relative the path position vectors
+  for (unsigned int i = 0; i != path.size() - 1; i++) {
+    dx = path[i + 1].pose.position.x - path[i].pose.position.x;
+    dy = path[i + 1].pose.position.y - path[i].pose.position.y;
+    theta = atan2(dy, dx);
+
+    // If points are overlapping, pass
+    if (fabs(dx) < 1e-4 && fabs(dy) < 1e-4) {
+      continue;
+    }
+
+    // Flip the angle if this path segment is in reverse
+    if (reversing_segment) {
+      theta += M_PI;  // orientationAroundZAxis will normalize
+    }
+    set_angle(&path[i],theta);
+  }
+}
 };
