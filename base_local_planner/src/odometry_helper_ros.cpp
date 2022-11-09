@@ -41,9 +41,8 @@
 
 namespace base_local_planner {
 
-OdometryHelperRos::OdometryHelperRos(std::string odom_topic, std::string steering_topic) {
+OdometryHelperRos::OdometryHelperRos(std::string odom_topic) {
   setOdomTopic( odom_topic );
-  setSteeringTopic( steering_topic);
 }
 
 void OdometryHelperRos::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
@@ -65,17 +64,6 @@ void OdometryHelperRos::getOdom(nav_msgs::Odometry& base_odom) {
   base_odom = base_odom_;
 }
 
-void OdometryHelperRos::SteerCallback(const robin_bridge_generated::EncoderData::ConstPtr& msg){
-    ROS_INFO_ONCE("steering angle received!");
-  boost::mutex::scoped_lock lock(steering_mutex_);
-  steering_.data = msg->steerAngle;
-  
-}
-
-void OdometryHelperRos::getSteeringAngle(std_msgs::Float64& steer_ang){
-  boost::mutex::scoped_lock lock(steering_mutex_);
-  steer_ang = steering_;
-}
 
 void OdometryHelperRos::getRobotVel(geometry_msgs::PoseStamped& robot_vel) {
   // Set current velocities from odometry
@@ -114,24 +102,5 @@ void OdometryHelperRos::setOdomTopic(std::string odom_topic)
     }
   }
 }
-
-void OdometryHelperRos::setSteeringTopic(std::string steering_topic){
-  if( steering_topic != steering_topic_ )
-  {
-    steering_topic_ = steering_topic;
-
-    if( steering_topic_ != "" )
-    {
-      ros::NodeHandle gn;
-      steering_sub_ = gn.subscribe<robin_bridge_generated::EncoderData>( steering_topic_, 1, boost::bind( &OdometryHelperRos::SteerCallback, this, _1 ));
-    }
-    else
-    {
-      steering_sub_.shutdown();
-    }
-  }
-
-}
-
 
 } /* namespace base_local_planner */
