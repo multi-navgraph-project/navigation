@@ -152,7 +152,7 @@ class AmclNode
     std::shared_ptr<tf2_ros::TransformListener> tfl_;
     std::shared_ptr<tf2_ros::Buffer> tf_;
     std::ofstream tmp_file;
-    std::string filename = "/home/agv-fl250/tmp_pose_file.txt";
+    std::string filename = ros::package::getPath("amcl") + "/cfg/" + "tmp_pose_file.txt" ;
     std::string file_text;
     bool sent_first_transform_;
 
@@ -786,7 +786,7 @@ void AmclNode::savePoseToServer()
   private_nh_.setParam("initial_cov_aa", 
                                   last_published_pose.pose.covariance[6*5+5]);
 
-  tmp_file.open("/home/agv-fl250/tmp_pose_file.txt");
+  tmp_file.open(filename);
   tmp_file << std::to_string(map_pose.getOrigin().x()) << "\n" << std::to_string(map_pose.getOrigin().y()) << "\n" << std::to_string(yaw);
   tmp_file.close();
 }
@@ -806,6 +806,7 @@ void AmclNode::updatePoseFromServer()
   if (!tmp_file_pose.is_open())
   {
     ROS_INFO("Cannot open the file %s, in this case take the initiale pose from parameters", filename.c_str());
+    
     // Check for NAN on input from param server, #5239
   double tmp_pos;
   private_nh_.param("initial_pose_x", tmp_pos, init_pose_[0]);
@@ -843,10 +844,13 @@ void AmclNode::updatePoseFromServer()
   while (getline (tmp_file_pose, file_text))
   {
     init_pose_[pose_idx] = std::stod(file_text);
+    if (std::isnan(init_pose_[pose_idx]))
+      {
+        init_pose_[pose_idx] = 0;
+      }
     pose_idx++;
   }
-  
-  
+   
 }
 
 void 
