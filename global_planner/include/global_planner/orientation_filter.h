@@ -58,6 +58,7 @@ class OrientationFilter {
         void setMode(int new_mode){ setMode((OrientationMode) new_mode); }
 
         void setWindowSize(size_t window_size){ window_size_ = window_size; }
+        void updateOrientation(std::vector<geometry_msgs::PoseStamped>& path);
     protected:
         OrientationMode omode_;
         int window_size_;
