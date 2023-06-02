@@ -40,7 +40,7 @@
     <depend>tf2_ros</depend>
     <depend>visualization_msgs</depend>
     <depend>voxel_grid</depend>
-
+    <depend>robin_bridge_generated</depend>
     <exec_depend>message_runtime</exec_depend>
 
     <test_depend>rosunit</test_depend>

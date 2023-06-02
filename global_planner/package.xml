@@ -2,7 +2,11 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>global_planner</name>
+<<<<<<< HEAD
   <version>1.17.2</version>
+=======
+  <version>1.16.4</version>
+>>>>>>> melodic-devel
   <description>
      A path planner library and node.
   </description>

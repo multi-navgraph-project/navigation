@@ -261,8 +261,13 @@ double AMCLLaser::LikelihoodFieldModel(AMCLLaserData *data, pf_sample_set_t* set
       // Check for NaN
       if(obs_range != obs_range)
         continue;
+      
+      const double pKnownPrior_ = 0.5;
+      const double pUnknownPrior_ = 1.0 - pKnownPrior_;
+      const double lambdaFactor_ = 0.01;
+      double pUnknown = lambdaFactor_ * exp(-lambdaFactor_ * obs_range) / (1.0 - exp(-lambdaFactor_ * data->range_max)) * pUnknownPrior_;
 
-      pz = 0.0;
+      pz = pUnknown;
 
       // Compute the endpoint of the beam
       hit.v[0] = pose.v[0] + obs_range * cos(pose.v[2] + obs_bearing);
@@ -281,9 +286,11 @@ double AMCLLaser::LikelihoodFieldModel(AMCLLaserData *data, pf_sample_set_t* set
         z = self->map->cells[MAP_INDEX(self->map,mi,mj)].occ_dist;
       // Gaussian model
       // NOTE: this should have a normalization of 1/(sqrt(2pi)*sigma)
-      pz += self->z_hit * exp(-(z * z) / z_hit_denom);
-      // Part 2: random measurements
-      pz += self->z_rand * z_rand_mult;
+      // pz += self->z_hit * exp(-(z * z) / z_hit_denom);
+      // // Part 2: random measurements
+      // pz += self->z_rand * z_rand_mult;
+
+      pz += (self->z_hit * exp(-(z * z) / z_hit_denom) + self->z_rand * z_rand_mult) * pKnownPrior_;
 
       // TODO: outlier rejection for short readings
 

@@ -127,7 +127,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             planner_ = new AStarExpansion(p_calc_, cx, cy);
 
         bool use_grid_path;
-        private_nh.param("use_grid_path", use_grid_path, false);
+        private_nh.param("use_grid_path", use_grid_path, true);
         if (use_grid_path)
             path_maker_ = new GridPath(p_calc_);
         else

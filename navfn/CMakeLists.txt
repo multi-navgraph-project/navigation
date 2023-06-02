@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(navfn)
 
-include(CheckIncludeFile)
-
 find_package(catkin REQUIRED
     COMPONENTS
         cmake_modules
@@ -74,13 +72,11 @@ target_link_libraries(navfn_node
     )
 
 install(TARGETS navfn_node
-       RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
        )
 
 install(TARGETS navfn
-       ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-       LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-       RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+       DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        )
 
 install(DIRECTORY include/navfn/

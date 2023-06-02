@@ -53,7 +53,6 @@ target_link_libraries(dwa_local_planner ${catkin_LIBRARIES})
 install(TARGETS dwa_local_planner
        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-       RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
        )
 
 install(FILES blp_plugin.xml
