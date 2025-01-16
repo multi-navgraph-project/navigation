@@ -82,7 +82,7 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
             path[0].pose.orientation = start.pose.orientation;
             interpolate(path, 0, n-1);
             break;
-        case FORWARDTHENINTERPOLATE:
+        case FORWARDTHENINTERPOLATE: {
             for(int i=0;i<n-1;i++){
                 setAngleBasedOnPositionDerivative(path, i);
             }
@@ -101,6 +101,7 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
             path[0].pose.orientation = start.pose.orientation;
             interpolate(path, i, n-1);
             break;
+        }
         case UPDATEORIENTATION: // New omode
             path[0].pose.orientation = start.pose.orientation;
             updateOrientation(path);
