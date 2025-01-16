@@ -100,7 +100,11 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
             
             path[0].pose.orientation = start.pose.orientation;
             interpolate(path, i, n-1);
-            break;           
+            break;
+        case UPDATEORIENTATION: // New omode
+            path[0].pose.orientation = start.pose.orientation;
+            updateOrientation(path);
+            break;
     }
 }
     
